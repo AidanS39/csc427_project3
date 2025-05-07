@@ -141,13 +141,13 @@ def compute_singletons(unigrams: dict(), test_path: str, author: str):
     
     # calculate the singletons geometric mean
     for word in singletons:
-        geo_mean += log(unigrams[word], 2)
+        geo_mean += math.log(unigrams[word], 2)
     geo_mean = geo_mean / len(singletons)
     geo_mean = 2**geo_mean
    
     return geo_mean
 
-def print_ranked_list(unigrams: dict(), authors: set(), target_author: str, test_path: str):
+def print_ranked_list_alltokens(unigrams: dict(), authors: set(), target_author: str, test_path: str):
     ranked_list = list()
     
     geo_means = dict()
@@ -159,10 +159,109 @@ def print_ranked_list(unigrams: dict(), authors: set(), target_author: str, test
     for rank, item in enumerate(ranked_list):
         print(f"{(rank + 1):<5}{item[0]:<10}{item[1]:<15}")
 
+def print_ranked_list_singletons(unigrams: dict(), authors: set(), target_author: str, test_path: str):
+    ranked_list = list()
+    
+    geo_means = dict()
+    for author in authors:
+        geo_means[author] = compute_singletons(unigrams[author], test_path, target_author)
+    
+    ranked_list = sorted(geo_means.items(), key=lambda x: x[1], reverse=True)
+    print("RANK AUTHOR    GEO. MEAN")
+    for rank, item in enumerate(ranked_list):
+        print(f"{(rank + 1):<5}{item[0]:<10}{item[1]:<15}")
 
+def evaluate_alltokens(unigrams: dict(), authors: set(), test_path: str, k: int):
+    correct_count = 0    
+
+    for target_author in authors:
+        geo_means = dict()
+        ranked_list = list()
+        for author in authors:
+            geo_means[author] = compute_singletons(unigrams[author], test_path, target_author)
+        
+        ranked_list = sorted(geo_means.items(), key=lambda x: x[1], reverse=True)
+        top_k = [ranking[0] for ranking in ranked_list[0:k]]
+        if target_author in top_k:
+            correct_count += 1
+    
+    print(f"{correct_count}/62")
+
+def evaluate_singletons(unigrams: dict(), authors: set(), test_path: str, k: int):
+    correct_count = 0    
+
+    for target_author in authors:
+        geo_means = dict()
+        ranked_list = list()
+        for author in authors:
+            geo_means[author] = compute_singletons(unigrams[author], test_path, target_author)
+        
+        ranked_list = sorted(geo_means.items(), key=lambda x: x[1], reverse=True)
+        top_k = [ranking[0] for ranking in ranked_list[0:k]]
+        if target_author in top_k:
+            correct_count += 1
+    
+    print(f"{correct_count}/62")
+
+
+
+# Main Function & Menu
+
+if (len(sys.argv) > 4):
+    print("Error: missing arguments. Format: python3 author_attrib.py imdb62.tsv <train path> <test path>")
+    sys.exit()
+
+tsv_path = sys.argv[1]
+train_path = sys.argv[2]
+test_path = sys.argv[3]
+
+print("Generating random numbers...")
 numbers = generate_test_train_numbers(1000, 0.10)
-authors, vocab = generate_all_author_files(numbers, "./imdb62.tsv", "./train", "./test")
-unigrams = generate_all_unigrams(authors, vocab, "./train")
 
-print_ranked_list(unigrams, authors, "102816", "./test")
+print("Generating training and test files for each author...")
+authors, vocab = generate_all_author_files(numbers, tsv_path, train_path, test_path)
 
+print("Generating unigram models for each author...")
+unigrams = generate_all_unigrams(authors, vocab, train_path)
+
+option = "0"
+while (option != "exit"):
+    print("OPTIONS:")
+    print("[1]\tAllTokens Rankings")
+    print("[2]\tSingletons Rankings")
+    print("[3]\tAllTokens Top k Evaluation")
+    print("[4]\tSingletons Top k Evaluation")
+    print("[exit]\tExit")
+    option = input("Please select an option: ")
+
+    if option == "1":
+        author = input("Author ID: ")
+        if author in authors:
+            print_ranked_list_alltokens(unigrams, authors, author, test_path)
+        else:
+            print("Invalid author.")
+    elif option == "2":
+        author = input("Author ID: ")
+        if author in authors:
+            print_ranked_list_singletons(unigrams, authors, author, test_path)
+        else:
+            print("Invalid author.")
+    elif option == "3":
+        try:
+            k = int(input("Please input a top k: "))
+            print("Evaluating top k...")
+            evaluate_alltokens(unigrams, authors, test_path, k)
+        except ValueError:
+            print("Invalid k.")
+    elif option == "4":
+        try:
+            k = int(input("Please input a top k: "))
+            print("Evaluating top k...")
+            evaluate_singletons(unigrams, authors, test_path, k)
+        except ValueError:
+            print("Invalid k.")
+    elif option == "exit":
+        sys.exit()
+    else:
+        print("Invalid option.")
+    input("Press Enter to continue...")
