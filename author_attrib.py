@@ -185,7 +185,7 @@ def evaluate_alltokens(unigrams: dict(), authors: set(), test_path: str, k: int)
         if target_author in top_k:
             correct_count += 1
     
-    print(f"{correct_count}/62")
+    print(f"Accuracy for top {k}: {correct_count}/62")
 
 def evaluate_singletons(unigrams: dict(), authors: set(), test_path: str, k: int):
     correct_count = 0    
@@ -201,7 +201,7 @@ def evaluate_singletons(unigrams: dict(), authors: set(), test_path: str, k: int
         if target_author in top_k:
             correct_count += 1
     
-    print(f"{correct_count}/62")
+    print(f"Accuracy for top {k}: {correct_count}/62")
 
 
 
