@@ -8,7 +8,7 @@ Using natural language processing concepts such as N-Gram modeling and classific
 
 This project was developed and tested on the TCNJ HPC system.
 
-The program has 2 main features, a ranking list feature and a top k evaluation feature. These features include versions for AllTokens and Singletons.
+The program has 2 main features, a ranking list feature and a top k evaluation feature. These features include versions for AllTokens and Singletons. Results will always slightly differ as the training and test sets are always randomly selected.
 
 ## Requirements
 
