@@ -88,12 +88,6 @@ def generate_all_unigrams(authors: set(), vocab: set(), train_path: str):
             for word in unigram_counts[author]:
                 unigrams[author][word] = (unigram_counts[author][word] + 1)/(reviews_length + vocab_length)
 
-
-
-#        if author is list(authors)[0]:
-#            print(unigram_counts[author])
-#            print(author)    
-#    print(len(unigrams))
     return unigrams 
 
 
@@ -178,7 +172,7 @@ def evaluate_alltokens(unigrams: dict(), authors: set(), test_path: str, k: int)
         geo_means = dict()
         ranked_list = list()
         for author in authors:
-            geo_means[author] = compute_singletons(unigrams[author], test_path, target_author)
+            geo_means[author] = compute_alltokens(unigrams[author], test_path, target_author)
         
         ranked_list = sorted(geo_means.items(), key=lambda x: x[1], reverse=True)
         top_k = [ranking[0] for ranking in ranked_list[0:k]]
@@ -249,14 +243,14 @@ while (option != "exit"):
     elif option == "3":
         try:
             k = int(input("Please input a top k: "))
-            print("Evaluating top k...")
+            print("Evaluating top k for AllTokens...")
             evaluate_alltokens(unigrams, authors, test_path, k)
         except ValueError:
             print("Invalid k.")
     elif option == "4":
         try:
             k = int(input("Please input a top k: "))
-            print("Evaluating top k...")
+            print("Evaluating top k for Singletons...")
             evaluate_singletons(unigrams, authors, test_path, k)
         except ValueError:
             print("Invalid k.")
