@@ -2,6 +2,7 @@ import sys
 import math
 import random
 
+# generates a training and test split of a specified number range
 def generate_test_train_numbers(num_range: int, test_ratio: float):
     numbers = range(num_range)
     test_numbers = random.sample(numbers, (int)(num_range * test_ratio))
@@ -12,6 +13,7 @@ def generate_test_train_numbers(num_range: int, test_ratio: float):
             "train" : train_numbers 
            }
 
+# generates training and test files for each author
 def generate_all_author_files(numbers: dict, tsv_file_path: str, train_file_path: str, test_file_path: str):
     authors = set()
     vocab = set()
@@ -44,23 +46,25 @@ def generate_all_author_files(numbers: dict, tsv_file_path: str, train_file_path
                 vocab.update(review[5].split())
             except:
                 raise Exception("Error: text section does not exist")
-                        
+        # handle last author that does not get included in the reviews loop above 
         generate_author_files(numbers, current_reviews, current_author, train_file_path, test_file_path)
         authors.add(current_author)
     return authors, vocab         
   
-              
+# generates training and test files for a specified author
 def generate_author_files(numbers: dict, reviews: str, author: str, train_path: str, test_path: str):
+    # iterate through every review
     with open(f"{train_path}/{author}.txt", "w") as train_file:
         with open(f"{test_path}/{author}.txt", "w") as test_file:
             for index, review in enumerate(reviews):
+                # if index is in test numbers, write to test file
                 if index in numbers["test"]:
                     test_file.write(review)
+                # if index is not in test numbers, write to train file
                 else:
                     train_file.write(review)
                     
-
-
+# generates unigram models for each author
 def generate_all_unigrams(authors: set(), vocab: set(), train_path: str):
     
     # intitalize a unigrams and unigram counts dictionary
@@ -91,7 +95,7 @@ def generate_all_unigrams(authors: set(), vocab: set(), train_path: str):
     return unigrams 
 
 
-
+# computes the alltokens geometric mean of a test file given an author's unigram model
 def compute_alltokens(unigrams: dict(), test_path: str, author: str):
     geo_mean = 0
     word_count = 0
@@ -110,6 +114,7 @@ def compute_alltokens(unigrams: dict(), test_path: str, author: str):
     
     return geo_mean
 
+# computes the singletons geometric mean of a test file given an author's unigram model
 def compute_singletons(unigrams: dict(), test_path: str, author: str):
     geo_mean = 0
     word_counts = dict()
@@ -141,6 +146,7 @@ def compute_singletons(unigrams: dict(), test_path: str, author: str):
    
     return geo_mean
 
+# prints the ranked list of each author's alltokens score given a target author's test set
 def print_ranked_list_alltokens(unigrams: dict(), authors: set(), target_author: str, test_path: str):
     ranked_list = list()
     
@@ -153,6 +159,7 @@ def print_ranked_list_alltokens(unigrams: dict(), authors: set(), target_author:
     for rank, item in enumerate(ranked_list):
         print(f"{(rank + 1):<5}{item[0]:<10}{item[1]:<15}")
 
+# prints the ranked list of each author's singletons score given a target author's test set
 def print_ranked_list_singletons(unigrams: dict(), authors: set(), target_author: str, test_path: str):
     ranked_list = list()
     
@@ -165,6 +172,7 @@ def print_ranked_list_singletons(unigrams: dict(), authors: set(), target_author
     for rank, item in enumerate(ranked_list):
         print(f"{(rank + 1):<5}{item[0]:<10}{item[1]:<15}")
 
+# evaluates the performance of the alltokens score, determined by if the target author is in the top k for every test file
 def evaluate_alltokens(unigrams: dict(), authors: set(), test_path: str, k: int):
     correct_count = 0    
 
@@ -181,6 +189,7 @@ def evaluate_alltokens(unigrams: dict(), authors: set(), test_path: str, k: int)
     
     print(f"Accuracy for top {k}: {correct_count}/62")
 
+# evaluates the performance of the singletons score, determined by if the target author is in the top k for every test file
 def evaluate_singletons(unigrams: dict(), authors: set(), test_path: str, k: int):
     correct_count = 0    
 
