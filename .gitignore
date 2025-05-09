@@ -1,6 +1,6 @@
 # train and test sets
-train/*
-test/*
+# train/*
+# test/*
 
 # data (we need to download locally, too large)
 imdb62.tsv
